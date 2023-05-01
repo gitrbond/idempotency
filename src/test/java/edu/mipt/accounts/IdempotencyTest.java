@@ -9,18 +9,21 @@ import org.springframework.boot.test.context.SpringBootTest;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
 
 import static java.lang.Runtime.getRuntime;
 import static java.util.concurrent.CompletableFuture.runAsync;
+import static java.util.concurrent.Executors.newFixedThreadPool;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 @SpringBootTest
 public class IdempotencyTest {
-    private final ExecutorService executorService = Executors.newFixedThreadPool(getRuntime().availableProcessors());
+    private final ExecutorService executorService = newFixedThreadPool(getRuntime().availableProcessors());
+    private final Map<String, AccountResponse> rqUidToAccountResponse = new ConcurrentHashMap<>();
 
     @Autowired
     private AccountRepository repository;
@@ -74,8 +77,16 @@ public class IdempotencyTest {
 
     private void executeTransfers(List<Transfer> transfers, Function3<String, Long, Long, AccountResponse> transfer) {
         List<CompletableFuture<Void>> futures = transfers.stream()
-                .map(t -> runAsync(() -> transfer.apply(t.rqUid, t.accountId, t.amount), executorService))
+                .map(t -> runAsync(() -> executeTransfer(transfer, t), executorService))
                 .toList();
         CompletableFuture.allOf(futures.toArray(new CompletableFuture[0])).join();
+    }
+
+    private void executeTransfer(Function3<String, Long, Long, AccountResponse> transfer, Transfer t) {
+        var response = transfer.apply(t.rqUid, t.accountId, t.amount);
+        var previousResponse = rqUidToAccountResponse.putIfAbsent(t.rqUid, response);
+        if (previousResponse != null) {
+            assertEquals(previousResponse, response);
+        }
     }
 }
