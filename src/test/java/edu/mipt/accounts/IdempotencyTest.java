@@ -33,9 +33,7 @@ public class IdempotencyTest {
     @Test
     void testTransfer() {
         //given
-        var account = new Account();
-        account.setBalance(10_000);
-        repository.saveAndFlush(account);
+        insertAccount();
         var withdrawTransfers = createTransfers(1500);
         var depositTransfers = createTransfers(2000);
 
@@ -50,6 +48,12 @@ public class IdempotencyTest {
 
         //execute deposit transfers again
         executeTransfers(depositTransfers, accounts::deposit, 20_000);
+    }
+
+    private void insertAccount() {
+        var account = new Account();
+        account.setBalance(10_000);
+        repository.saveAndFlush(account);
     }
 
     private void executeTransfers(List<Transfer> withdrawTransfers, Function3<String, Long, Long, AccountResponse> transfer, int expectedBalance) {
