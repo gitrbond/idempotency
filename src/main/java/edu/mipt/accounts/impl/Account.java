@@ -1,4 +1,4 @@
-package edu.mipt.accounts;
+package edu.mipt.accounts.impl;
 
 import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
@@ -20,9 +20,7 @@ public class Account {
     }
 
     public void withdraw(long amount) {
-        if (balance < amount) {
-            throw new IllegalStateException("Недостаточно средств на счету: " + balance);
-        }
+        if (balance < amount) throw new AccountException(balance);
         balance -= amount;
     }
 
