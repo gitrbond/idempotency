@@ -16,7 +16,7 @@ import static edu.mipt.accounts.AccountResponse.okResponse;
 @Service
 @Transactional(noRollbackFor = AccountException.class)
 @RequiredArgsConstructor
-@Retryable(maxAttempts = 20)
+@Retryable(maxAttempts = 7)
 public class IdempotencyAccounts implements Accounts {
     private final AccountRepository accountRepository;
 
