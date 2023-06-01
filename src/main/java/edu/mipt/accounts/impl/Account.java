@@ -2,6 +2,7 @@ package edu.mipt.accounts.impl;
 
 import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
+import jakarta.persistence.Version;
 import lombok.Data;
 
 @Data
@@ -10,6 +11,8 @@ public class Account {
     @Id
     private long id;
     private long balance;
+    @Version
+    private long version;
 
     public Account() {
     }
