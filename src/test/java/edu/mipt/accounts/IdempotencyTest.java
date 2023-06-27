@@ -2,6 +2,7 @@ package edu.mipt.accounts;
 
 import edu.mipt.accounts.impl.Account;
 import edu.mipt.accounts.impl.AccountRepository;
+import edu.mipt.accounts.impl.ResponseRecordRepository;
 import io.vavr.Function3;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -26,7 +27,9 @@ public class IdempotencyTest {
     private final Map<String, AccountResponse> rqUidToAccountResponse = new ConcurrentHashMap<>();
 
     @Autowired
-    private AccountRepository repository;
+    private AccountRepository accountRepository;
+    @Autowired
+    private ResponseRecordRepository responseRecordRepository;
     @Autowired
     private Accounts accounts;
 
@@ -56,13 +59,13 @@ public class IdempotencyTest {
     private void insertAccount() {
         var account = new Account();
         account.setBalance(10_000);
-        repository.saveAndFlush(account);
+        accountRepository.saveAndFlush(account);
     }
 
     private void executeTransfers(List<Transfer> withdrawTransfers, Function3<String, Long, Long, AccountResponse> transfer, int expectedBalance) {
         Account account;
         executeTransfers(withdrawTransfers, transfer);
-        account = repository.findById(0);
+        account = accountRepository.findById(0);
         assertEquals(expectedBalance, account.getBalance());
     }
 
