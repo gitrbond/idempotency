@@ -12,7 +12,5 @@ import java.util.Optional;
 
 @Repository
 public interface ResponseRecordRepository extends JpaRepository<ResponseRecord, String> {
-    @Lock(LockModeType.OPTIMISTIC)
-//    @Transactional
     Optional<ResponseRecord> findById(String rqUID);
 }
