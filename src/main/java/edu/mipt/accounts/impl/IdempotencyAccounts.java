@@ -4,6 +4,8 @@ import edu.mipt.accounts.AccountResponse;
 import edu.mipt.accounts.Accounts;
 import edu.mipt.accounts.ResponseRecord;
 import lombok.RequiredArgsConstructor;
+import org.springframework.dao.CannotAcquireLockException;
+import org.springframework.orm.ObjectOptimisticLockingFailureException;
 import org.springframework.retry.annotation.Retryable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -15,7 +17,8 @@ import static edu.mipt.accounts.AccountResponse.okResponse;
 @Service
 @Transactional(noRollbackFor = AccountException.class)
 @RequiredArgsConstructor
-@Retryable(maxAttempts = 7)
+@Retryable(retryFor = {ObjectOptimisticLockingFailureException.class,
+        CannotAcquireLockException.class}, maxAttempts = 10)
 public class IdempotencyAccounts implements Accounts {
     private final AccountRepository accountRepository;
 
